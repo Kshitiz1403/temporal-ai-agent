@@ -1,0 +1,16 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Environment files
+.env*
+
+# Build outputs
+dist/
+build/
+
+# Development files
+.gitignore
+
+# Documentation
+README.md 

@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:3000/api/agent';
+import config from '../config/config.js';
+
+const API_BASE_URL = config.api.baseUrl;
 
 class ApiError extends Error {
     constructor(message, status) {

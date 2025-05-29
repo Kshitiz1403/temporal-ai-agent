@@ -3,10 +3,11 @@ import NavBar from "./components/NavBar";
 import ChatWindow from "./components/ChatWindow";
 import PendingApprovals from "./components/PendingApprovals";
 import { apiService } from "./services/api";
+import config from "./config/config";
 
-const POLL_INTERVAL = 2000; // 2 seconds (reduced from 600ms to be less aggressive)
+const POLL_INTERVAL = config.polling.interval; // 2 seconds (configurable)
 const INITIAL_ERROR_STATE = { visible: false, message: '' };
-const DEBOUNCE_DELAY = 300; // 300ms debounce for user input
+const DEBOUNCE_DELAY = config.ui.debounceDelay; // 300ms debounce (configurable)
 
 function useDebounce(value, delay) {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -69,10 +70,10 @@ export default function App() {
         }
     
         // Auto-dismiss errors after 3 seconds
-        errorTimerRef.current = setTimeout(() => setError(INITIAL_ERROR_STATE), 3000);
+        errorTimerRef.current = setTimeout(() => setError(INITIAL_ERROR_STATE), config.ui.errorDisplayTime);
 
         // If too many consecutive errors, stop polling
-        if (consecutiveErrorsRef.current >= 5) {
+        if (consecutiveErrorsRef.current >= config.polling.maxRetries) {
             console.warn('Too many consecutive errors, stopping polling');
             if (pollingRef.current) {
                 clearInterval(pollingRef.current);
@@ -301,7 +302,7 @@ export default function App() {
 
     return (
         <div className="flex flex-col h-screen">
-            <NavBar title="Temporal AI Agent 🤖" />
+            <NavBar title={config.app.name} />
 
             {error.visible && (
                 <div className="fixed top-16 left-1/2 transform -translate-x-1/2 
