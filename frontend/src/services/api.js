@@ -25,28 +25,9 @@ export const apiService = {
 
     async startConversation(config = {}) {
         try {
-            const defaultConfig = {
-                systemPrompt: "You are a helpful AI assistant that can help users accomplish their goals using available tools.",
-                initialGoals: [
-                    {
-                        id: "default-goal",
-                        name: "default-goal",
-                        description: "Help the user with their requests",
-                        tools: ['search_events', 'search_flights', 'create_invoice', 'send_email'],
-                        completed: false
-                    }
-                ],
-                agentConfig: {
-                    maxTokens: 4000,
-                    temperature: 0.7,
-                    enableConversationSummary: false,
-                    maxConversationHistory: 50,
-                    enableHumanApproval: true,
-                    model: "gemini-2.5-flash-preview-05-20"
-                }
-            };
 
-            const requestConfig = { ...defaultConfig, ...config };
+
+            const requestConfig = {};
 
             const res = await fetch(`${API_BASE_URL}/conversations`, {
                 method: 'POST',

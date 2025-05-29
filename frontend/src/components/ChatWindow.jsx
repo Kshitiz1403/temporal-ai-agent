@@ -46,16 +46,31 @@ const Message = memo(({ msg, idx, isLastMessage, onConfirm, onContentChange }) =
     }
     
     if (role === "assistant") {
-        // Try to parse content as JSON for structured responses, fallback to plain text
-        const data = safeParse(content);
-        return (
-            <LLMResponse
-                data={data}
-                onConfirm={onConfirm}
-                isLastMessage={isLastMessage}
-                onHeightChange={onContentChange}
-            />
-        );
+        // Check if content looks like JSON (starts with { or [), otherwise treat as plain text
+        const isJsonLike = typeof content === 'string' && (content.trim().startsWith('{') || content.trim().startsWith('['));
+        
+        if (isJsonLike) {
+            // Try to parse as structured response
+            const data = safeParse(content);
+            return (
+                <LLMResponse
+                    data={data}
+                    onConfirm={onConfirm}
+                    isLastMessage={isLastMessage}
+                    onHeightChange={onContentChange}
+                />
+            );
+        } else {
+            // Treat as plain text response
+            return (
+                <LLMResponse
+                    data={{ response: content }}
+                    onConfirm={onConfirm}
+                    isLastMessage={isLastMessage}
+                    onHeightChange={onContentChange}
+                />
+            );
+        }
     }
     
     // Handle system messages if any
@@ -85,6 +100,11 @@ const ChatWindow = memo(({ conversation, loading, onConfirm, onContentChange }) 
         const { role } = msg;
         return role === "user" || role === "assistant" || role === "system";
     });
+
+    console.log('🎭 ChatWindow received conversation:', conversation);
+    console.log('✅ ChatWindow filtered messages:', filtered);
+    console.log('📝 ChatWindow filtered length:', filtered.length);
+    console.log('⏳ ChatWindow loading state:', loading);
 
     return (
         <ChatErrorBoundary>

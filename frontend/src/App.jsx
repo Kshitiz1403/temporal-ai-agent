@@ -100,16 +100,41 @@ export default function App() {
             const response = await apiService.getConversationHistory();
             const conversationData = response.data;
             
+            console.log('📥 Fetched conversation data:', conversationData);
+            
             // Transform the conversation data to match the expected format
             const newConversation = conversationData.messages || [];
             
-            setConversation(prevConversation => 
-                JSON.stringify(prevConversation) !== JSON.stringify(newConversation) ? newConversation : prevConversation
-            );
+            console.log('💬 New conversation messages:', newConversation);
+            console.log('📊 Conversation length:', newConversation.length);
+            
+            setConversation(prevConversation => {
+                const shouldUpdate = JSON.stringify(prevConversation) !== JSON.stringify(newConversation);
+                console.log('🔄 Should update conversation:', shouldUpdate);
+                console.log('📝 Previous conversation:', prevConversation);
+                console.log('🆕 New conversation:', newConversation);
+                
+                // Force update if we have messages but previous conversation was empty
+                if (!shouldUpdate && newConversation.length > 0 && prevConversation.length === 0) {
+                    console.log('🚀 Forcing conversation update due to empty previous state');
+                    return [...newConversation];
+                }
+                
+                // Always return newConversation if it has messages, even if comparison fails
+                if (newConversation.length > 0) {
+                    return [...newConversation];
+                }
+                
+                return shouldUpdate ? newConversation : prevConversation;
+            });
     
             if (newConversation.length > 0) {
                 const lastMsg = newConversation[newConversation.length - 1];
                 const isAgentMessage = lastMsg.role === "assistant";
+                
+                console.log('📩 Last message:', lastMsg);
+                console.log('🤖 Is agent message:', isAgentMessage);
+                console.log('📊 Conversation status:', conversationData.status);
                 
                 // Check if conversation is in a terminal state
                 const isTerminalState = ['completed', 'terminated', 'failed'].includes(conversationData.status);
@@ -124,6 +149,7 @@ export default function App() {
                         : prevLastMessage
                 );
             } else {
+                console.log('❌ No messages in conversation');
                 const isTerminalState = ['completed', 'terminated', 'failed'].includes(conversationData.status);
                 setLoading(false);
                 setDone(isTerminalState);
@@ -134,6 +160,7 @@ export default function App() {
             // Successfully fetched data, clear any persistent errors
             clearErrorOnSuccess();
         } catch (err) {
+            console.error('❌ Error fetching conversation:', err);
             handleError(err, "fetching conversation");
         }
     }, [handleError, clearErrorOnSuccess]);
@@ -245,7 +272,7 @@ export default function App() {
             const result = await apiService.startConversation();
             console.log('Started conversation:', result);
             
-            setConversation([]);
+            // Don't reset conversation to empty - let polling fetch the initial messages
             setLastMessage(null);
             setSessionStarted(true);
             setDone(false);
