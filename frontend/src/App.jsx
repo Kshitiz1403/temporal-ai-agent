@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import NavBar from "./components/NavBar";
 import ChatWindow from "./components/ChatWindow";
+import PendingApprovals from "./components/PendingApprovals";
 import { apiService } from "./services/api";
 
 const POLL_INTERVAL = 2000; // 2 seconds (reduced from 600ms to be less aggressive)
@@ -101,7 +102,7 @@ export default function App() {
             const conversationData = response.data;
             
             console.log('📥 Fetched conversation data:', conversationData);
-            
+           
             // Transform the conversation data to match the expected format
             const newConversation = conversationData.messages || [];
             
@@ -374,6 +375,16 @@ export default function App() {
                     border-t border-gray-300 dark:border-gray-700 shadow-lg
                     transition-all duration-200"
                     style={{ zIndex: 10 }}>
+                    
+                    <PendingApprovals 
+                        sessionId={apiService.currentSessionId}
+                        onApprovalChange={(toolCallId, approved) => {
+                            console.log(`Tool ${toolCallId} ${approved ? 'approved' : 'denied'}`);
+                            // Trigger a conversation update
+                            fetchConversationHistory();
+                        }}
+                    />
+                    
                     <form onSubmit={(e) => {
                         e.preventDefault();
                         handleSendMessage();

@@ -163,6 +163,23 @@ export const apiService = {
         }
     },
 
+    async getPendingApprovals(sessionId = null) {
+        const id = sessionId || this.currentSessionId;
+        if (!id) {
+            throw new ApiError('No active session', 400);
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/conversations/${id}/pending-approvals`);
+            return handleResponse(res);
+        } catch (error) {
+            throw new ApiError(
+                'Failed to get pending approvals',
+                error.status || 500
+            );
+        }
+    },
+
     async approveToolExecution(toolCallId, approved, sessionId = null) {
         const id = sessionId || this.currentSessionId;
         if (!id) {

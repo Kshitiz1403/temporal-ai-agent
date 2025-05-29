@@ -51,3 +51,56 @@ labels {
     height: 2em;
     object-fit: contain;
 }
+
+/* Pending Approvals Component Styles */
+.pending-approvals {
+    @apply mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shadow-sm;
+}
+
+.approval-header h3 {
+    @apply text-lg font-semibold text-yellow-800 mb-2;
+}
+
+.approval-header p {
+    @apply text-sm text-yellow-700 mb-4;
+}
+
+.approval-card {
+    @apply mb-3 p-4 bg-white border border-yellow-300 rounded-md shadow-sm;
+}
+
+.tool-info h4 {
+    @apply text-base font-medium text-gray-800 mb-2;
+}
+
+.tool-parameters {
+    @apply mb-3;
+}
+
+.tool-parameters pre {
+    @apply text-xs bg-gray-100 p-2 rounded border overflow-x-auto text-gray-700;
+}
+
+.approval-actions {
+    @apply flex gap-2 justify-end;
+}
+
+.approve-btn {
+    @apply px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.deny-btn {
+    @apply px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.approval-error {
+    @apply mt-3 p-3 bg-red-50 border border-red-200 rounded-md;
+}
+
+.approval-error p {
+    @apply text-sm text-red-700 mb-2;
+}
+
+.approval-error button {
+    @apply text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded;
+}
