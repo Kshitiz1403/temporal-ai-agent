@@ -6,9 +6,10 @@ import {
   updateGoalsSignal,
   getConversationQuery,
   getStatusQuery,
+  getPendingApprovalsQuery,
   AIAgentWorkflowParams
 } from '../workflows/aiAgentWorkflow';
-import { ConversationSession, Goal } from '../shared/types';
+import { ConversationSession, Goal, ToolCall } from '../shared/types';
 import { v4 as uuidv4 } from 'uuid';
 import config from '@/config/config';
 
@@ -128,6 +129,20 @@ Be conversational and ask clarifying questions when you need more information. A
     } catch (error) {
       console.error(`Error querying status for session ${sessionId}:`, error);
       return null;
+    }
+  }
+
+  async getPendingApprovals(sessionId: string): Promise<ToolCall[]> {
+    const handle = this.activeWorkflows.get(sessionId);
+    if (!handle) {
+      return [];
+    }
+
+    try {
+      return await handle.query(getPendingApprovalsQuery);
+    } catch (error) {
+      console.error(`Error querying pending approvals for session ${sessionId}:`, error);
+      return [];
     }
   }
 

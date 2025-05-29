@@ -137,6 +137,32 @@ router.get('/conversations/:sessionId/status', (req, res) => {
 });
 
 /**
+ * GET /api/agent/conversations/:sessionId/pending-approvals
+ * Get the pending tool approvals for a conversation
+ */
+router.get('/conversations/:sessionId/pending-approvals', (req, res) => {
+  (async () => {
+    try {
+      const { sessionId } = req.params;
+
+      const pendingApprovals = await temporalService.getPendingApprovals(sessionId);
+
+      res.json({
+        success: true,
+        data: { pendingApprovals }
+      });
+    } catch (error) {
+      console.error('Error getting pending approvals:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to get pending approvals',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  })();
+});
+
+/**
  * POST /api/agent/conversations/:sessionId/approve
  * Approve or reject a tool execution
  */

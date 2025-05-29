@@ -41,6 +41,7 @@ export const updateGoalsSignal = defineSignal<[Goal[]]>('updateGoals');
 // Workflow queries for external status checking
 export const getConversationQuery = defineQuery<ConversationSession>('getConversation');
 export const getStatusQuery = defineQuery<string>('getStatus');
+export const getPendingApprovalsQuery = defineQuery<ToolCall[]>('getPendingApprovals');
 
 export interface AIAgentWorkflowParams {
   sessionId: string;
@@ -111,6 +112,10 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
   }));
 
   setHandler(getStatusQuery, () => status);
+
+  setHandler(getPendingApprovalsQuery, () => {
+    return Array.from(pendingToolApprovals.values()).map(pending => pending.toolCall);
+  });
 
   // Send initial greeting message
   const greetingMessage: Message = {
