@@ -8,6 +8,12 @@ Once you run `docker compose up --build`, all services are available through a s
 - **URL**: http://localhost/
 - **Description**: React frontend for chatting with the AI agent
 - **Features**: Start conversations, send messages, approve tool executions
+- **URL-based Conversations**: Each conversation has a unique URL that can be shared and resumed
+
+### 🔗 Conversation URLs
+- **New Chat**: http://localhost/chat/new
+- **Specific Conversation**: http://localhost/chat/[conversation-id]
+- **Share Feature**: Use the "Share" button in active conversations to copy the URL
 
 ### 🔧 API Endpoints  
 - **Base URL**: http://localhost/api/agent
@@ -48,6 +54,10 @@ curl http://localhost:3012           # Temporal UI (direct access)
 3. **Start a conversation**: Click "Start New Chat"
 
 4. **Monitor workflows**: Visit http://localhost:3012
+
+5. **Share conversations**: Use the "Share" button to copy conversation URLs for later access
+
+6. **Resume conversations**: Visit any conversation URL to continue where you left off
 
 ## 🛠️ Development
 

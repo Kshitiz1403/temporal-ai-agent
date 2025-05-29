@@ -110,7 +110,7 @@ services:
       - api-server
       - frontend
     ports:
-      - "80:80"
+      - "3011:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
