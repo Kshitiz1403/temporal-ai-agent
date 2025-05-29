@@ -2,8 +2,10 @@
   "watch": ["src", ".env"],
   "ext": "ts,js,json",
   "ignore": ["src/**/*.spec.ts", "src/**/*.test.ts"],
-  "exec": "ts-node -r dotenv/config -r tsconfig-paths/register --transpile-only ./src/index.ts",
+  "exec": "ts-node -r dotenv/config -r tsconfig-paths/register --transpile-only ./src/worker.ts",
   "env": {
     "NODE_ENV": "development"
-  }
+  },
+  "delay": "1000",
+  "verbose": true
 }

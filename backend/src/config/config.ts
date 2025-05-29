@@ -62,7 +62,7 @@ const config = {
         apiKey: process.env.GOOGLE_AI_API_KEY,
         baseUrl: process.env.GOOGLE_AI_BASE_URL,
         models: {
-          chat: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
+          chat: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro', 'gemini-2.5-flash-preview-05-20', 'gemini-2.5-flash', 'gemini-2.0-flash-exp',],
         },
         defaultChatModel: process.env.GOOGLE_DEFAULT_MODEL || 'gemini-1.5-pro',
       },

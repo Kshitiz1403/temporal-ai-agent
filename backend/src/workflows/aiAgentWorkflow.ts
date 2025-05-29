@@ -60,7 +60,6 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
   let pendingToolApprovals = new Map<string, { toolCall: ToolCall; resolve: (approved: boolean) => void }>();
   
   const config: AgentConfig = {
-    model: 'gpt-4o',
     maxTokens: 2000,
     temperature: 0.7,
     enableConversationSummary: true,
@@ -80,9 +79,9 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
   }
 
   // Set up signal handlers
-  let newUserMessage: string | undefined;
+  const userMessageQueue: string[] = [];
   setHandler(userMessageSignal, (message: string) => {
-    newUserMessage = message;
+    userMessageQueue.push(message);
   });
 
   setHandler(approveToolSignal, (toolCallId: string, approved: boolean) => {
@@ -113,12 +112,23 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
 
   setHandler(getStatusQuery, () => status);
 
+  // Send initial greeting message
+  const greetingMessage: Message = {
+    id: uuid4(),
+    role: 'assistant',
+    content: `Hello! I'm your AI assistant. I can help you with various tasks using the tools available to me. What would you like to do today?`,
+    timestamp: new Date()
+  };
+  messages.push(greetingMessage);
+
   // Main conversation loop
   while (!['completed', 'failed'].includes(status)) {
     try {
+      console.log(`[Workflow ${sessionId}] Waiting for user message. Status: ${status}`);
       // Wait for user input
-      await condition(() => newUserMessage !== undefined);
+      await condition(() => userMessageQueue.length > 0);
       
+      const newUserMessage = userMessageQueue.shift();
       if (!newUserMessage) continue;
 
       // Check input relevance if we have a current goal
@@ -135,7 +145,6 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
               timestamp: new Date()
             };
             messages.push(clarificationMessage);
-            newUserMessage = undefined;
             continue;
           }
         }
@@ -149,7 +158,6 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
         timestamp: new Date()
       };
       messages.push(userMessage);
-      newUserMessage = undefined;
 
       // Summarize conversation if it gets too long
       if (config.enableConversationSummary && messages.length > config.maxConversationHistory) {
@@ -173,9 +181,20 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
       // Check if agent should use tools
       const toolCallsResult = await generateToolCalls(messages, availableTools);
       
+      console.log(`[Workflow ${sessionId}] Tool calls result:`, { 
+        success: toolCallsResult.success, 
+        hasData: !!toolCallsResult.data, 
+        toolCount: toolCallsResult.data?.length || 0,
+        error: toolCallsResult.error 
+      });
+
+      console.log('toolCallsResult.data', JSON.stringify(toolCallsResult.data, null, 2));
+
+      
       if (toolCallsResult.success && toolCallsResult.data && toolCallsResult.data.length > 0) {
         // Execute tool calls
         const toolResults: ToolResult[] = [];
+
         
         for (const toolCall of toolCallsResult.data) {
           const toolDefinition = getToolDefinition(toolCall.name);
@@ -262,6 +281,12 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
       // Generate AI response
       const responseResult = await generateAIResponse(messages, config);
       
+      console.log(`[Workflow ${sessionId}] AI response result:`, { 
+        success: responseResult.success, 
+        hasData: !!responseResult.data,
+        error: responseResult.error 
+      });
+      
       if (responseResult.success) {
         const aiMessage: Message = {
           id: uuid4(),
@@ -283,6 +308,8 @@ export async function aiAgentWorkflow(params: AIAgentWorkflowParams): Promise<Co
 
       // Store conversation state
       await storeConversationState(sessionId, messages, goals, status);
+
+      console.log(`[Workflow ${sessionId}] Completed iteration. Status: ${status}, Message count: ${messages.length}`);
 
       // Small delay to prevent tight loops
       await sleep('100ms');

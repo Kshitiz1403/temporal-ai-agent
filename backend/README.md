@@ -77,7 +77,11 @@ temporal server start-dev
 The worker processes workflows and activities:
 
 ```bash
+# Production
 npm run worker
+
+# Development (with auto-restart on file changes)
+npm run worker:dev
 ```
 
 ### 5. Start the API Server
@@ -228,6 +232,7 @@ src/
 
 - `npm run dev` - Start development server
 - `npm run worker` - Start Temporal worker
+- `npm run worker:dev` - Start Temporal worker with auto-restart
 - `npm run build` - Build TypeScript
 - `npm start` - Start production server
 

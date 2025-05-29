@@ -9,6 +9,7 @@
     "dev": "nodemon",
     "build": "tsc",
     "worker": "ts-node -r dotenv/config -r tsconfig-paths/register --transpile-only ./src/worker.ts",
+    "worker:dev": "nodemon --config nodemon.worker.json",
     "migrate-up": "db-migrate up --env prod --config ./src/config/db-migrate.json --migrations-dir ./src/migrations --verbose",
     "migrate-down": "db-migrate down --env prod --config ./src/config/db-migrate.json --migrations-dir ./src/migrations --verbose",
     "migrate-create": "db-migrate create --env prod --config ./src/config/db-migrate.json --migrations-dir ./src/migrations",
@@ -24,8 +25,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@ai-sdk/anthropic": "^0.0.20",
-    "@ai-sdk/google": "^0.0.19",
+    "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/google": "^1.2.18",
     "@ai-sdk/openai": "^0.0.24",
     "@temporalio/activity": "^1.10.1",
     "@temporalio/client": "^1.10.1",

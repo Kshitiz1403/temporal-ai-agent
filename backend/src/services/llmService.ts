@@ -1,7 +1,7 @@
 import { generateText, generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { google } from '@ai-sdk/google';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 import { Message, AgentConfig, ToolDefinition, ToolCall, LLMProvider } from '../shared/types';
 import config, { isProviderConfigured, isValidModel, getConfiguredProviders } from '../config/config';
@@ -50,7 +50,11 @@ export class LLMService implements LLMProvider {
           if (!isProviderConfigured('google')) {
             throw new Error('Google AI provider not configured - missing API key');
           }
-          return google(modelName) as any;
+
+          const googleProvider = createGoogleGenerativeAI({
+            apiKey: config.llm.providers.google.apiKey,
+          });
+          return googleProvider(modelName) as any;
           
         default:
           throw new Error(`Unsupported LLM provider: ${provider}`);
@@ -62,10 +66,16 @@ export class LLMService implements LLMProvider {
   }
 
   private convertMessagesToAIFormat(messages: Message[]) {
-    return messages.map(msg => ({
-      role: msg.role,
-      content: msg.content,
-    }));
+    return messages
+      .filter(msg => {
+        // Only include valid roles that the AI SDK accepts
+        const validRoles = ['system', 'user', 'assistant'];
+        return validRoles.includes(msg.role);
+      })
+      .map(msg => ({
+        role: msg.role,
+        content: msg.content,
+      }));
   }
 
   async generateText(
@@ -80,7 +90,7 @@ export class LLMService implements LLMProvider {
 
       const { text } = await generateText({
         model,
-        messages: aiMessages as any,
+        messages: aiMessages,
         maxTokens: agentConfig?.maxTokens || config.llm.settings.maxTokens,
         temperature: agentConfig?.temperature || config.llm.settings.temperature,
       });
@@ -98,19 +108,36 @@ export class LLMService implements LLMProvider {
     modelOverride?: string
   ): Promise<ToolCall[]> {
     try {
-      const modelToUse = modelOverride || config.llm.defaultModel;
+      const modelToUse = config.llm.defaultModel;
       const model = this.getModel(modelToUse);
       const aiMessages = this.convertMessagesToAIFormat(messages);
 
       const systemPrompt = this.buildToolCallPrompt(tools);
-      const messagesWithSystem = [
-        { role: 'system' as const, content: systemPrompt },
-        ...aiMessages
-      ];
+      
+      // Handle system messages properly to avoid multiple system messages for Anthropic
+      let messagesForModel: any[];
+      
+      // Check if there's already a system message
+      const existingSystemIndex = aiMessages.findIndex(msg => msg.role === 'system');
+      
+      if (existingSystemIndex !== -1) {
+        // Merge with existing system message
+        messagesForModel = [...aiMessages];
+        messagesForModel[existingSystemIndex] = {
+          role: 'system',
+          content: `${messagesForModel[existingSystemIndex].content}\n\n${systemPrompt}`
+        };
+      } else {
+        // Add new system message at the beginning
+        messagesForModel = [
+          { role: 'system', content: systemPrompt },
+          ...aiMessages
+        ];
+      }
 
       const { object } = await generateObject({
         model,
-        messages: messagesWithSystem as any,
+        messages: messagesForModel,
         schema: toolCallSchema,
         maxTokens: config.llm.settings.maxTokens,
         temperature: config.llm.settings.temperature,
